@@ -5,7 +5,6 @@
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include "MFRC522.h"
-#include <WiFiUdp.h>
 #include <OSCMessage.h>
 #include <Adafruit_NeoPixel.h>
 /* wiring the MFRC522 to ESP8266 (ESP-12)
@@ -15,7 +14,7 @@
   MISO    = GPIO12
   SCK     = GPIO14
   GND     = GND
-
+  
   3.3V    = 3.3V
 */
 
@@ -28,9 +27,9 @@ int sensorValue;
 
 
 const unsigned int outPort = 9999;
-IPAddress outIp(192, 168, 43, 182);
+IPAddress outIp(192,168,43,182);
 
-WiFiUDP Udp; 
+
 
 //create new osc message
 OSCMessage global_mes;
@@ -44,11 +43,11 @@ MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_RGB + NEO_KHZ800);
 
 void setup() {
-  pinMode(5, INPUT);
-  tone(4, 1024, 4);
+pinMode(5, INPUT);
+  tone(4,1024, 4);
   delay(500);
   noTone(4);
-
+  
   pixels.begin(); // This initializes the NeoPixel library.
   Serial.begin(115200);    // Initialize serial communications
   delay(250);
@@ -73,12 +72,12 @@ void setup() {
   Serial.println(F("======================================================"));
   Serial.println(F("Scan for Card and print UID:"));
 
-Udp.begin(8888);
+  Udp.begin(8888);
 }
 
 void loop() {
   sensorValue = digitalRead(5);
-
+  
   if (sensorValue == HIGH) {
     for (int i = 0; i < NUMPIXELS; i++) {
       // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
@@ -90,7 +89,7 @@ void loop() {
       // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
       pixels.setPixelColor(i, pixels.Color(150, 0, 0)); // Moderately bright green color.
     }
-    pixels.show(); // This sends the updated pixel color to the hardware.
+      pixels.show(); // This sends the updated pixel color to the hardware.
   }
 
   Serial.println(sensorValue);
@@ -108,27 +107,27 @@ void loop() {
   Serial.print(F("Card UID:"));
   dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
   Serial.println();
-  tone(4, 128, 4);
+  tone(4,128, 4);
   for (int i = 0; i < NUMPIXELS; i++) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     pixels.setPixelColor(i, pixels.Color(0, 0, 150)); // Moderately bright green color.
   }
-  pixels.show(); // This sends the updated pixel color to the hardware.
+    pixels.show(); // This sends the updated pixel color to the hardware.
 
-  OSCMessage msg("/test");
-  msg.add("1");
-  Udp.beginPacket(outIp, outPort);
-  msg.send(Udp);
-  Udp.endPacket();
-  msg.empty();
-
+ OSCMessage msg("/analog/0");
+  msg.add((int32_t)1));
+  EthernetUdp.beginPacket(outIp, outPort);
+    msg.send(Udp); // send the bytes to the SLIP stream
+  EthernetUdp.endPacket(); // mark the end of the OSC Packet
+  msg.empty(); // free space occupied by message
+  
   delay(2000);
   noTone(4);
   for (int i = 0; i < NUMPIXELS; i++) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     pixels.setPixelColor(i, pixels.Color(0, 0, 0)); // Moderately bright green color.
   }
-  pixels.show(); // This sends the updated pixel color to the hardware.
+    pixels.show(); // This sends the updated pixel color to the hardware.
 }
 
 // Helper routine to dump a byte array as hex values to Serial
