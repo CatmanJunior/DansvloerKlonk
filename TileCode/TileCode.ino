@@ -25,9 +25,9 @@ const int NFCTIMEOUT = 500;
 const char *ssid =  "Ziggo78F5D45";     // change according to your Network - cannot be longer than 32 characters!
 const char *pass =  "Sx7phx8fnkeP"; // change according to your Network
 const char *mqtt_server = "192.168.178.40";
-const char *NAME = "Tile7";
-const char *TOPIC = "t7";
-const char *LEDTOPIC = "led7";
+const char *NAME = "Tile6";
+const char *TOPIC = "t6";
+const char *LEDTOPIC = "led6";
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -60,7 +60,7 @@ void setup() {
 
   mfrc522.PCD_Init();    // Init MFRC522
   Serial.println(mfrc522.PCD_GetAntennaGain()); // gives me a 64 (00000010)
-  //mfrc522.PCD_SetAntennaGain(112); // set to max (00001110)
+  mfrc522.PCD_SetAntennaGain(112); // set to max (00001110)
   Serial.println(mfrc522.PCD_GetAntennaGain()); //gives me the 112
   memcpy(buffer, "2", 1);
 
