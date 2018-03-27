@@ -25,9 +25,9 @@ const int NFCTIMEOUT = 500;
 const char *ssid =  "Ziggo78F5D45";     // change according to your Network - cannot be longer than 32 characters!
 const char *pass =  "Sx7phx8fnkeP"; // change according to your Network
 const char *mqtt_server = "192.168.178.40";
-const char *NAME = "Tile6";
-const char *TOPIC = "t6";
-const char *LEDTOPIC = "led6";
+const char *NAME = "Tile3";
+const char *TOPIC = "t3";
+const char *LEDTOPIC = "led3";
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
