@@ -20,7 +20,7 @@ ORANGE	=	"255153051"
 DGREEN	=	"000102000"
 DBLUE	=	"000000153"
 LBLUE	=	"153204255"
-GREY	=	"192192192"
+GREY	=	"100100100"
 LBROWN	=	"204102000"
 
 #MQTT Constants
@@ -28,14 +28,15 @@ BROKERIP = "192.168.178.40"
 
 #Sequencer Constants
 BPM		= 	120		#Beats per Minute
-GRID	=	(4,4)	#The layout of the tiles
-BEATS	=	8		#The amount of beats to loop 		
+GRID	=	(3,4)	#The layout of the tiles
+BEATS	=	12		#The amount of beats to loop 		
 
 TOTALTILES 	= 	GRID[0]*GRID[1]
 TPB			=	int(TOTALTILES/BEATS)		#Tiles per beat
 MPB         =	1000/(BPM/60)				#Milis per beat
 
-MIDILIST	=	[0,61,62,63,64,65,66,67,68,69,70,71,72,73,74]
+MIDILIST	=	[0,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80]
+PIANOMIDILIST = [60, 62, 65, 67, 69, 72, 74, 77, 79, 60,62,65, 62, 65, 67, 69, 72, 74, 77, 79, 60,62,65]
 
 def MidiOn(m):
 	midiout.send_message([0x90, m, 120])
@@ -49,7 +50,10 @@ WIDTH 	= 	200
 HEIGHT 	= 	200	
 
 #GameModes
-mole = False
+MOLEMODE = False
+SEQUENCERMODE = True
+PIANOMODE = True
+RANDOMSEQUENCE = False
 
 #Midi Init
 midiout = rtmidi.MidiOut()
@@ -64,8 +68,9 @@ class Tile():
 		self.beat = beat
 		self.row = row
 		self.color = BLACK
-		self.mole = False
-		self.object = 0
+		self.MOLEMODE = False
+		self.object = ObjectList[0]
+
 	def SendColor(self, rgb):
 		client.publish("led" + str(self.id),str(rgb) + "1")
 
@@ -73,7 +78,7 @@ class Tile():
 		pass
 
 	def SetMole(self):
-		self.mole = True
+		self.MOLEMODE = True
 		self.SetColor(WHITE)
 
 	def SetColor(self, rgb):
@@ -81,9 +86,11 @@ class Tile():
 
 	def SetObject(self, obj):
 		self.object = obj
+		self.SetColor(obj.color)
 
 	def RemoveObject(self):
-		self.object = 0
+		self.object = ObjectList[0]
+		self.SetColor(BLACK)
 
 #OBJECT CLASS
 class Object():
@@ -100,6 +107,7 @@ ObjectList = []
 for i in range(13):
 	ObjectList.append(0)
 
+ObjectList[0] = Object("niks", 		0, 		BLACK,	MIDILIST[0])
 ObjectList[1] = Object("poep", 		1, 		BROWN,	MIDILIST[1])
 ObjectList[2] = Object("kip", 		2, 		ORANGE,	MIDILIST[2])
 ObjectList[3] = Object("gitaar", 	3, 		LBLUE,	MIDILIST[3])
@@ -135,19 +143,22 @@ def on_message(client, userdata, msg):
 				for o in ObjectList:
 					if tempmsg == str(o.id):
 						print("Tile #" + str(i.id) +" and beat #" + str(i.beat) + " are set to: " + o.name)
-						sequencer[i.beat][i.row].object = ObjectList[o.id]
-						i.SetColor(o.color)
+						sequencer[i.beat][i.row].SetObject(o)
 				if tempmsg == "0":
 					print("Tile #" + str(i.id) +" and beat #" + str(i.beat) + " are set to: 0")
 					#sequencer[i.beat][i.row] = 0
 					#i.SetColor("000000000")
 			if subTop == "s":
-				if mole and i.mole:
-					i.SetColor("000000000")
-					print("Got the mole at -> Tile #" + str(i.id))
+				if MOLEMODE and i.MOLEMODE:
+					i.SetColor("BLACK")
+					print("Got the MOLE at -> Tile #" + str(i.id))
+
 				i.SendColor(PURPLE)
+
 				sequencer[i.beat][i.row].RemoveObject()
 
+				if PIANOMODE:
+					MidiOn(PIANOMIDILIST[i.id])
 
 client = mqtt.Client("RASPBERRY")
 client.on_connect = on_connect
@@ -168,23 +179,59 @@ lastTick = 0
 sequencer = []
 tiles = []
 tileGrid = []
-
+	
 for j in range(TPB):
 	for i in range(BEATS):
 		tiles.append(Tile(j*BEATS+i,i,j))
 
-for i in range(GRID[0]):
-	tileGrid.append([])
-	for j in range(GRID[1]):
-		tileGrid[i].append(tiles[j+i*GRID[1]])
+def SetupSequencer():
+	global sequencer, tileGrid
+	sequencer = []
+	tileGrid = []
+	
+	for i in range(GRID[0]):
+		tileGrid.append([])
+		for j in range(GRID[1]):
+			tileGrid[i].append(tiles[j+i*GRID[1]])
 
-for i in range(BEATS):
-	sequencer.append([])
-	for j in range(TPB):
-		sequencer[i].append(tiles[j*BEATS+i])
+	for i in range(BEATS):
+		sequencer.append([])
+		for j in range(TPB):
+			sequencer[i].append(tiles[j*BEATS+i])
 
+	
+
+def EmptyTiles():
+	for i in tiles:
+		i.RemoveObject()
+
+def PopulateTile():
+	a = random.choice(tiles)
+	a.SetObject(random.choice(ObjectList))
+	
+def EmptyTile():
+	random.choice(tiles).RemoveObject()
+	
+
+def PianoMode():
+	global PIANOMODE
+	PIANOMODE = not PIANOMODE
+	print("PIANOMODE: " + str(PIANOMODE))
+def SequencerMode():
+	global SEQUENCERMODE
+	SEQUENCERMODE = not SEQUENCERMODE
+	print("SEQUENCERMODE: " + str(SEQUENCERMODE))
+
+def RandomSequencerMode():
+	global RANDOMSEQUENCE
+	RANDOMSEQUENCE = not RANDOMSEQUENCE
+	print ("RANDOMSEQUENCE: " + str(RANDOMSEQUENCE))
+def FakePiano():
+	a = random.choice(tiles)
+	client.publish("t" + str(a.id),"s50")
+
+SetupSequencer()
 print (sequencer)
-
 while gameLoop:
 	currentTick = pygame.time.get_ticks()
 	
@@ -198,42 +245,57 @@ while gameLoop:
 			if event.key == pygame.K_RIGHT:
 				pass
 			if event.key == pygame.K_SPACE:
-				pass
+				PopulateTile()
 			if event.key == pygame.K_SLASH:
-				pass
+				FakePiano()
+			if event.key == pygame.K_p:
+				PopulateTile()
+			if event.key == pygame.K_r:
+				EmptyTiles()
+			if event.key == pygame.K_d:
+				EmptyTile()
+			if event.key == pygame.K_2:
+				PianoMode()
+			if event.key == pygame.K_1:
+				SequencerMode()
+			if event.key == pygame.K_3:
+				RandomSequencerMode()
 
 	if (currentTick - lastTick >= MPB):
 
 		for i in MIDILIST:
 			MidiOff(i)
 
-		currentBeat+= 1;
+		if RANDOMSEQUENCE:
+			currentBeat = random.randint(0,BEATS-1)
+		else:
+			currentBeat+= 1;
+			if (currentBeat >= BEATS): 
+					currentBeat = 0
+					print()
+			
 		lastTick = currentTick
 
 		for i in tiles:
 			if i.beat != currentBeat:
 				i.SendColor(i.color)
 
-		if mole:
+		if MOLEMODE:
 			newmole = random.randint(0,len(tiles)-1)
 			tiles[newmole].SetMole() 
 			print("New Mole = " + str(newmole))
+		
+		if SEQUENCERMODE:
+			for i in range(TPB):
+				if (sequencer[currentBeat][i].object != ObjectList[0]):
+					print(str(currentBeat) + ": " + sequencer[currentBeat][i].object.name)
+					tiles[currentBeat+BEATS*i].SendColor(WHITE)
+					MidiOn(sequencer[currentBeat][i].object.midi)
 
-		for i in range(TPB):
-			if (currentBeat >= BEATS): 
-				currentBeat = 0
-				print()
+				else:
+					print(str(currentBeat) + ": niks")
+					tiles[currentBeat+BEATS*i].SendColor(WHITE)
 
-			if (sequencer[currentBeat][i].object != 0):
-				print(str(currentBeat) + ": " + sequencer[currentBeat][i].object.name)
-				tiles[currentBeat+BEATS*i].SendColor(WHITE)
-				MidiOn(sequencer[currentBeat][i].object.midi)
-
-			else:
-				print(str(currentBeat) + ": False")
-				# tiles[currentBeat+BEATS*i-1].SendColor("000000000")
-				tiles[currentBeat+BEATS*i].SendColor(WHITE)
-				
 	pygame.display.flip()
 
 	clock.tick (60)
