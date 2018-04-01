@@ -124,6 +124,7 @@ void loop() {
       sendNull();
       lastState = 0;
     } else if (foundCard && lastState != 1) {
+      client.publish(TOPIC, readData);
       sendMsg(readData);
       lastState = 1;
 

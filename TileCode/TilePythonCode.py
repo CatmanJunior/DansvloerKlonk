@@ -115,8 +115,8 @@ ObjectList[4] = Object("bas", 		4, 		PURPLE,	MIDILIST[4])
 ObjectList[5] = Object("brandweer", 5, 		RED,	MIDILIST[5])
 ObjectList[6] = Object("sax", 		6, 		YELLOW,	MIDILIST[6])
 ObjectList[7] = Object("leeuw", 	7, 		LBROWN,	MIDILIST[7])
-ObjectList[8] = Object("robot", 	8, 		GREY,	MIDILIST[8])
-ObjectList[9] = Object("donder", 	9, 		BROWN,	MIDILIST[9])
+ObjectList[8] = Object("robot", 	8, 		BLUE,	MIDILIST[8])
+ObjectList[9] = Object("donder", 	9, 		DBLUE,	MIDILIST[9])
 ObjectList[10] = Object("banaan", 	10, 	YELLOW,	MIDILIST[10])
 ObjectList[11] = Object("mic", 		11, 	DBLUE,	MIDILIST[11])
 ObjectList[12] = Object("eend", 	12, 	DGREEN,	MIDILIST[12])
@@ -199,8 +199,6 @@ def SetupSequencer():
 		for j in range(TPB):
 			sequencer[i].append(tiles[j*BEATS+i])
 
-	
-
 def EmptyTiles():
 	for i in tiles:
 		i.RemoveObject()
@@ -212,11 +210,11 @@ def PopulateTile():
 def EmptyTile():
 	random.choice(tiles).RemoveObject()
 	
-
 def PianoMode():
 	global PIANOMODE
 	PIANOMODE = not PIANOMODE
 	print("PIANOMODE: " + str(PIANOMODE))
+
 def SequencerMode():
 	global SEQUENCERMODE
 	SEQUENCERMODE = not SEQUENCERMODE
@@ -226,6 +224,7 @@ def RandomSequencerMode():
 	global RANDOMSEQUENCE
 	RANDOMSEQUENCE = not RANDOMSEQUENCE
 	print ("RANDOMSEQUENCE: " + str(RANDOMSEQUENCE))
+
 def FakePiano():
 	a = random.choice(tiles)
 	client.publish("t" + str(a.id),"s50")
