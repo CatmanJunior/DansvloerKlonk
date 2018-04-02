@@ -17,10 +17,8 @@
 
   #include <SPI.h>
   #include <MFRC522.h>
- 
- 
   #define SS_PIN          15
-  #define RST_PIN        0
+  #define RST_PIN        0  
 
   MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
   MFRC522::StatusCode status; //variable to get card status
@@ -37,7 +35,7 @@ void setup() {
   SPI.begin(); // Init SPI bus
   mfrc522.PCD_Init(); // Init MFRC522 card 
   Serial.println(F("Sketch has been started!"));
-  memcpy(buffer,"2",1);
+  memcpy(buffer,"h",1);
 }
 
 void loop() {
