@@ -1,0 +1,196 @@
+/* General styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1FB7EA 0%, #EB559F 100%);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .container {
+    width: 80%;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    overflow: hidden; /* Keep everything within the rounded corners */
+  }
+  
+  .header h1 {
+    text-align: center;
+    color: #ffffffde; /* Adjust color to match the design */
+  }
+  
+  /* Tiles grid */
+  .dance-floor {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns */
+    grid-gap: 10px;
+    padding: 20px;
+  }
+  
+  .tile {
+    background-color: #333;
+    padding-bottom: 100%; /* Makes the tile square */
+    position: relative;
+    border-radius: 10px;
+  }
+  
+  /* Control styles */
+  .controls-top, .bpm-control, .sample-control, .tile-control, .footer-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    max-width: 30%;
+  }
+  
+  .control-button {
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #FF758C 0%, #FF7EB3 100%);
+    border: none;
+    border-radius: 100px; /* Rounded edges */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .control-button:hover {
+    background: linear-gradient(135deg, #FF8FA3 0%, #FF99BB 100%);
+  }
+  
+  /* Slider styles */
+  .slider {
+    -webkit-appearance: none; /* Override default appearance */
+    appearance: none;
+    width: 100%;
+    background: transparent; /* Slider background */
+    outline: #fff;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px; /* Slider handle width */
+    height: 25px; /* Slider handle height */
+    border-radius: 50%; 
+    background: #FFF;
+    cursor: pointer;
+  }
+  
+  /* Sample selector styles */
+  .dropdown {
+    padding: 10px;
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: white;
+  }
+  
+  /* Text input styles */
+  .text-input {
+    padding: 10px;
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: white;
+    margin-right: 10px; /* Spacing between elements */
+  }
+  
+  /* BPM display */
+  .bpm-display {
+    color: #FFF;
+    padding: 10px;
+    min-width: 60px; /* Adjust as needed */
+    text-align: center;
+    background-color: #444; /* Dark background for display */
+    border-radius: 5px;
+  }
+  
+  /* Adjust spacing */
+  .control-item {
+    margin-right: 10px; /* Add space between control items */
+  }
+  
+  /* Active state toggle for buttons */
+  .control-button.active {
+    background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+  }
+  
+
+/* Controls */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+
+
+/* Sample selector */
+.sample-selector {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #292929;
+    color: white;
+}
+
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    /* 4 columns */
+    grid-template-rows: repeat(3, 100px);
+    /* 3 rows */
+    gap: 10px;
+    /* Space between tiles */
+}
+
+.mqtt-messages {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.message-topic{
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+
+}
+
+.message-time {
+    font-size: 12px;
+    color: #999;
+
+    margin-bottom: 10px;
+
+}
+
+.message-body {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+}
+
+.div {
+    color: #fff;
+}

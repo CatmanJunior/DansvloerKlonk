@@ -1,0 +1,79 @@
+<!-- FILEPATH: /c:/Users/rjmth/OneDrive/Documents/2TurvenHoog/WebInterface/templates/index.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Klonk aeb Interface</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+</head>
+{% include 'modal.html' %}
+
+<body>
+  <div class="container">
+
+
+
+    <div class="header">
+      <h1>Dance Floor Controller</h1>
+    </div>
+    <button class="control-button" id="modalBtn">Setup</button>
+    
+    <div class="dance-floor">
+      <div class="grid tiles">
+        <!-- Generate 12 tiles (3 rows x 4 columns) -->
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+      </div>
+    </div>
+
+
+    <div class="bpm-control">
+      <label for="bpm-slider">BPM</label>
+      <input type="range" id="bpm-slider" class="slider" min="60" max="180" value="120">
+      <div class="bpm-display">120 BPM</div>
+    </div>
+
+    <div class="sample-control">
+      <label for="sample-selector">Select Sample:</label>
+      <select id="sample-selector" class="dropdown">
+        <option value="sample1">Sample 1</option>
+        <!-- ... more samples -->
+      </select>
+    </div>
+
+    <div class="tile-control">
+      <button class="control-button" id="reset-button">Reset Tiles</button>
+      <!-- Other tile controls here -->
+    </div>
+
+    <div class="footer-controls">
+      <input type="text" class="text-input" placeholder="Name Your Tile">
+      <button class="control-button active" data-toggle-state="active">Active</button>
+      <button class="control-button" data-toggle-state="inactive">Inactive</button>
+      <!-- Other footer controls here -->
+    </div>
+
+
+  </div>
+
+
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,7 @@
+{
+    "python.analysis.typeCheckingMode": "basic",
+    "launch": {
+        "configurations": [],
+        "compounds": []
+    }
+}
