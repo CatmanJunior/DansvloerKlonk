@@ -33,10 +33,11 @@ body {
   }
   
   .tile {
-    background-color: #333;
+    background: linear-gradient(70deg, #ff7d7da8 0%, #5555ac 100%);
     padding-bottom: 100%; /* Makes the tile square */
     position: relative;
     border-radius: 10px;
+    
   }
   
   /* Control styles */
@@ -58,7 +59,7 @@ body {
   }
   
   .control-button:hover {
-    background: linear-gradient(135deg, #FF8FA3 0%, #FF99BB 100%);
+    background: linear-gradient(80%, #FF8FA3 0%, #FF99BB 100%);
   }
   
   /* Slider styles */
@@ -194,3 +195,27 @@ body {
 .div {
     color: #fff;
 }
+
+@keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+    }
+  }
+  
+ 
+  
+  .connected {
+    animation: pulse 2s infinite; /* Apply the pulse animation */
+  }
+  
+  .disconnected {
+    background-color: #9e9e9e; /* Grey color indicates a tile is not connected */
+    /* No animation for disconnected tiles */
+  }
+  
