@@ -47,28 +47,18 @@ def index():
 
 @app.route('/send-message')
 def send_message():
-
     #send topic time and message
-    mqqManager.send_message("sample/set", '{"time": 0, "topic": "sample/set", "body": "test"}')
+    current_time = time.time()
+    formatted_time = time.strftime('%H:%M:%S', time.localtime(current_time))
+    
+    # mqqManager.send_message("sample/set", '{"time": 0, "topic": "sample/set", "body": "test"}')
+    mqqManager.send_message("sample/set", '{"time": "' + formatted_time + '", "topic": "sample/set", "body": "test"}')
     return "Message sent"
-
-
-@app.route('/stream_updates')
-def streamed_response():
-
-    def generate():
-        while True:
-            
-            yield f"data: {sequencer.current_beat}\n\n"
-            time.sleep(1)
-            
-    return Response(stream_with_context(generate()), mimetype='text/json')
 
 @app.route('/get_update')
 def get_update():
     # Generate or fetch the update data
     data = {"current_beat": sequencer.current_beat,"message_list": message_list[-10:]}
-    mqqManager.send_message("sample/set", '{"time": 0, "topic": "sample/set", "body": "test"}')
 
     return jsonify(data)
 

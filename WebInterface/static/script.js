@@ -73,7 +73,7 @@ function fetchUpdate() {
                 }
             })
             updateModal(data['message_list']);
-            
+
         }).catch(error => console.error('Error:', error));
 }
 
@@ -87,13 +87,7 @@ setInterval(fetchUpdate, 300);
 function updateModal(data) {
     const messages = document.getElementById('msgList');
     messages.innerHTML = "";
-    //     <div class="message">
-    //     <div class="message-header">
-    //       <span class="message-topic">topic</span>
-    //       <span class="message-time">time</span>
-    //     </div>
-    //     <div class="message-body">body</div>
-    //   </div>
+
     data.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.className = "message";
@@ -122,3 +116,12 @@ function updateModal(data) {
         messages.appendChild(messageDiv);
     });
 };
+
+//add button function to reset-button to get /send-message
+document.getElementById('reset-button').addEventListener('click', () => {
+    fetch('/send-message')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        }).catch(error => console.error('Error:', error));
+});
