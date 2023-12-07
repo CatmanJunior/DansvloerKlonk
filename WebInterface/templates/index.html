@@ -6,78 +6,108 @@
   <meta charset="UTF-8" />
   <title>Klonk aeb Interface</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='modal.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='modal.css') }}" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
 </head>
 
 <body>
-{% include 'modal.html' %}
+  {% include 'modal.html' %}
 
   <div class="container">
     <div class="header">
-      <h1>Dance Floor Controller</h1>
-    </div>
-    <button class="control-button" id="modalBtn">Setup</button>
-    
-    <div class="dance-floor">
-      <div class="grid tiles">
-        <!-- Generate 12 tiles (3 rows x 4 columns) -->
-        <div class="tile connected" id='0'></div>
-        <div class="tile connected" id='1'></div>
-        <div class="tile connected" id='2'></div>
-        <div class="tile connected" id='3'></div> 
+      <button class="header-button" id="modalBtn">Msgs</button>
+      <button class="header-button" id="reset-button">Send msg</button>
+      <button class="header-button" id="setup-button">Setup</button>
 
-        <div class="tile connected" id='4'></div> 
-        <div class="tile connected" id='5'></div>
-        <div class="tile connected" id='6'></div>
-        <div class="tile connected" id='7'></div>
-        <div class="tile connected" id='8'></div>
-        <div class="tile connected" id='9'></div>
-        <div class="tile connected" id='10'></div>
-        <div class="tile connected" id='11'></div>
-        <div class="tile connected" id='12'></div>
-        <div class="tile connected" id='13'></div>
-        <div class="tile connected" id='14'></div>
-        <div class="tile connected" id='15'></div>
-        
+
+      <h1>Dance Floor Controller</h1>
+      <h5>connected</h5>
+      <div id="statusCircle" class="circle connected-circle"></div>
+
+    </div>
+
+    <div class="dance-floor">
+      <div class="row">
+        <div class="tile-control">
+{# <div class="context-menu">
+  <ul class="menu-items">
+    <li><a href="#cut">Cut</a></li>
+    <li><a href="#copy">Copy</a></li>
+    <li><a href="#paste">Paste</a></li>
+    <li><a href="#delete">Delete</a></li>
+  </ul>
+</div> #}
+        </div>
+        <div class="grid tiles">
+          <!-- Generate 12 tiles (3 rows x 4 columns) -->
+          <div class="tile connected" id='0'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='1'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='2'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='3'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='4'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='5'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='6'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='7'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='8'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='9'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='10'>
+            <div class="inner-tile"></div>
+          </div>
+          <div class="tile connected" id='11'>
+            <div class="inner-tile"></div>
+          </div>
+        </div>
+
       </div>
     </div>
+    {# <div class="controls">
+      <div class="bpm-control">
+        <label for="bpm-slider">BPM</label>
+        <input type="range" id="bpm-slider" class="slider" min="60" max="180" value="120">
+        <div class="bpm-display">120 BPM</div>
+      </div>
+
+      <div class="sample-control">
+        <label for="sample-selector">Select Sample:</label>
+        <select id="sample-selector" class="dropdown">
+          <option value="sample1">Sample 1</option>
+          <!-- ... more samples -->
+        </select>
+      </div>
 
 
-    <div class="bpm-control">
+
+      <div class="footer-controls">
+        <input type="text" class="text-input" placeholder="Name Your Tile">
+        <button class="control-button active" data-toggle-state="active">Active</button>
+        <button class="control-button" data-toggle-state="inactive">Inactive</button>
+        <!-- Other footer controls here -->
+      </div>
 
 
-
-
-      <label for="bpm-slider">BPM</label>
-      <input type="range" id="bpm-slider" class="slider" min="60" max="180" value="120">
-      <div class="bpm-display">120 BPM</div>
-    </div>
-
-    <div class="sample-control">
-      <label for="sample-selector">Select Sample:</label>
-      <select id="sample-selector" class="dropdown">
-        <option value="sample1">Sample 1</option>
-        <!-- ... more samples -->
-      </select>
-    </div>
-
-    <div class="tile-control">
-      <button class="control-button" id="reset-button">Reset Tiles</button>
-      <!-- Other tile controls here -->
-    </div>
-
-    <div class="footer-controls">
-      <input type="text" class="text-input" placeholder="Name Your Tile">
-      <button class="control-button active" data-toggle-state="active">Active</button>
-      <button class="control-button" data-toggle-state="inactive">Inactive</button>
-      <!-- Other footer controls here -->
-    </div>
-
+    </div> #}
 
   </div>
-
-
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
