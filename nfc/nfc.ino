@@ -185,43 +185,37 @@ void reconnect() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  String r, g, b, t, d;
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-  for (int i = 0; i < 3; i++) {
-    Serial.print((char)payload[i]);
-    r = r + (char)payload[i];
-  }
-  for (int i = 3; i < 6; i++) {
-    Serial.print((char)payload[i]);
-    g = g + (char)payload[i];
-  }
-  for (int i = 6; i < 9; i++) {
-    Serial.print((char)payload[i]);
-    b = b + (char)payload[i];
-  }
 
-  t = (char)payload[9];
-  d = (char)payload[10];
-  d += (char)payload[11];
+  // Directly calculate integer values from the payload bytes
+  int r = (payload[0] - '0') * 100 + (payload[1] - '0') * 10 + (payload[2] - '0');
+  int g = (payload[3] - '0') * 100 + (payload[4] - '0') * 10 + (payload[5] - '0');
+  int b = (payload[6] - '0') * 100 + (payload[7] - '0') * 10 + (payload[8] - '0');
 
-  Serial.print(t.toInt());
-  Serial.println(d.toInt());
-  if (t.toInt() == 1)
-    ColorAll(r.toInt(), g.toInt(), b.toInt());
-  if (t.toInt() == 2)
-    ColorPer(r.toInt(), g.toInt(), b.toInt(), 50);
-  if (t.toInt() == 3)
-    ColorGroup(r.toInt(), g.toInt(), b.toInt(), d.toInt());
-  if (t.toInt() == 4)
-    ColorLed(r.toInt(), g.toInt(), b.toInt(), d.toInt());
-  //  Serial.println();
-  //  Serial.println(r.toInt());
-  //  Serial.println(g.toInt());
-  //  Serial.println(b.toInt());
+  int t = payload[9] - '0'; // Assuming payload contains ASCII characters
+  int d = (payload[10] - '0') * 10 + (payload[11] - '0'); // Assuming two digits
 
+  Serial.print(t);
+  Serial.println(d);
+
+  switch (t) {
+    case 1:
+      ColorAll(r, g, b);
+      break;
+    case 2:
+      ColorPer(r, g, b, 50);
+      break;
+    case 3:
+      ColorGroup(r, g, b, d);
+      break;
+    case 4:
+      ColorLed(r, g, b, d);
+      break;
+  }
 }
+
 
 // Helper routine to dump a byte array as hex values to Serial
 void dump_byte_array(byte *buffer, byte bufferSize) {
@@ -239,30 +233,6 @@ void StartSequence() {
   ColorPer(0, 0, 255, 100);
   delay(500);
   ColorAll(255, 0, 0);
-}
-
-int DecodeR(byte* rgb) {
-  String newR;
-  for (int i = 0; i < 3; i++) {
-    newR += (char)rgb[i];
-  }
-  return newR.toInt();
-}
-
-int DecodeG(byte* rgb) {
-  String newG;
-  for (int i = 0; i < 3; i++) {
-    newG += (char)rgb[i];
-  }
-  return newG.toInt();
-}
-
-int DecodeB(byte* rgb) {
-  String newB;
-  for (int i = 0; i < 3; i++) {
-    newB += (char)rgb[i];
-  }
-  return newB.toInt();
 }
 
 
