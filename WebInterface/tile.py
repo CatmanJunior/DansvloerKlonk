@@ -1,27 +1,40 @@
 class Tile:
-    def __init__(self, id, row=0, column=0, color="000000", object_id=0):
-        self.id = id
-        self.row = row
-        self.column = column
-        self.color = color  # Using hex color representation
-        self.object_id = object_id  # ID reference to an object
+    def __init__(self, id, sample=None):
+        self.id = id  # Unique identifier for the tile
+        self.sample = sample  # Sample object assigned to the tile
+        self.is_active = False  # Indicates whether the tile is active
+        self.current_color = "#FFFFFF"  # Default color of the tile
+        self.connected = False  # Indicates whether the tile is connected to the server
 
-    def to_dict(self):
-        """Convert tile information to dictionary for easy JSON serialization."""
-        return {
-            "id": self.id,
-            "row": self.row,
-            "column": self.column,
-            "color": self.color,
-            "object_id": self.object_id,
-        }
+    def assign_sample(self, sample):
+        """Assigns a Sample object to the tile and updates the tile's color."""
+        self.sample = sample
+        # Assuming the Sample object has an attribute 'led_color' for its color representation
+        self.current_color = sample.led_color if sample else "#FFFFFF"
 
-    def update_color(self, new_color):
-        """Update the color of the tile."""
-        self.color = new_color
+    def activate(self):
+        """Activates the tile."""
+        self.is_active = True
 
-    def update_object(self, new_object_id):
-        """Update the object associated with the tile."""
-        self.object_id = new_object_id
+    def deactivate(self):
+        """Deactivates the tile."""
+        self.is_active = False
 
-    # You can add more methods as required for your application
+    def toggle_activation(self):
+        """Toggles the tile's active state."""
+        self.is_active = not self.is_active
+
+    def play(self):
+        """Plays the tile's assigned sample if the tile is active."""
+        if self.is_active and self.sample:
+            self.sample.play()  # Assuming the Sample object has a 'play' method
+    
+    def onConnect(self):
+        """Sets the tile's connected state to True."""
+        self.connected = True
+    
+    def onDisconnect(self):
+        """Sets the tile's connected state to False."""
+        self.connected = False
+    
+    

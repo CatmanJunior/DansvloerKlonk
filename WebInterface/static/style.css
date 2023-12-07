@@ -152,46 +152,6 @@ body {
     /* Space between tiles */
 }
 
-.mqtt-messages {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    box-sizing: border-box;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.message {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-}
-
-.message-topic{
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 10px;
-
-}
-
-.message-time {
-    font-size: 12px;
-    color: #999;
-
-    margin-bottom: 10px;
-
-}
-
-.message-body {
-    background-color: #f0f0f0;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    font-size: 14px;
-}
-
 .div {
     color: #fff;
 }

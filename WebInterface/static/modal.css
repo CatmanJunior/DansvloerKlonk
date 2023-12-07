@@ -1,0 +1,72 @@
+/* Modal styling adapted to fit the overall theme */
+.modal {
+    display: none; /* Hide modal by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-dialog {
+    position: relative;
+    width: auto;
+    max-width: 80%;
+    margin: 0;
+    background-color: linear-gradient(270deg, #6e0e0ea8 0%, #5555ac 100%) !important;
+
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: transparent !important;
+    border: none;
+    border-radius: 10px;
+    color: white; /* Text color */
+  }
+  
+  .modal-body {
+    padding: 25px;
+  }
+  
+  .mqtt-messages h2 {
+    color: #ffffffde;
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center; /* Centered header title */
+  }
+  
+  
+  .message {
+    background: linear-gradient(270deg, #6e0e0ea8 0%, #5555ac 100%);
+    margin-bottom: 2px;
+    padding: 5px;
+    border-radius: 15px;
+  }
+  
+  .message-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .message-topic {
+    color: #aeb2f8;
+    margin-right: 15px;
+  }
+  
+  .message-time {
+    color: #999;
+    font-size: 0.9em;
+  }
+  
+  .message-body {
+    color: #ccc;
+    font-size: 0.95em;
+  }
