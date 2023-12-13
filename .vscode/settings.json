@@ -3,5 +3,6 @@
     "launch": {
         "configurations": [],
         "compounds": []
-    }
+    },
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true
 }

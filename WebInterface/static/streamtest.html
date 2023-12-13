@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stream Test</title>
+    <script>
+        window.onload = () => {
+            const eventSource = new EventSource('http://127.0.0.1:5000/stream');
+            eventSource.onmessage = function(event) {
+                document.getElementById('data').textContent = event.data;
+            };
+        };
+    </script>
+</head>
+<body>
+    <h1>Streaming Data</h1>
+    <div id="data">Waiting for data...</div>
+</body>
+</html>

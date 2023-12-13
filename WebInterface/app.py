@@ -4,40 +4,66 @@ To run the app, run this file with python.
 python app.py
 it will run on localhost:5000
 """
-from os import curdir
-import re
+
 import time
-from turtle import st
-from typing import Dict
+from typing import Any, Dict
 from flask import Flask, Response, jsonify, render_template, request, stream_with_context
 from livereload import Server
 from livereload.watcher import Watcher
+from constants import TOPICS, MIDILIST, BLACK, BROWN, ORANGE, LBLUE, PURPLE, RED, YELLOW, LBROWN, GREY, DBLUE, DGREEN
 from sequencer import Sequencer
-
+from sample import Sample
 from mqtt_manager import MQTTManager
 from threading import Timer
 app = Flask(__name__)
-app.debug = True  # Enable debug mode
+# app.debug = True  # Enable debug mode
 
-mqqManager = MQTTManager()  # Create an MQTTManager object
+mqttManager = MQTTManager(topic_list=list(TOPICS.values()))
 
-sequencer = Sequencer(16, 120)  # Create a Sequencer object with 16 tiles and 120 bpm
+sampleList = [
+    Sample(id=0, name="---",
+           midi_values=MIDILIST[0], svg="default.svg", led_color=BLACK, nfc_address="address_0"),
+    Sample(id=56, name="poep",
+           midi_values=MIDILIST[8], svg="poep.svg", led_color=BROWN, nfc_address="address_56"),
+    Sample(id=59, name="kip",
+           midi_values=MIDILIST[5], svg="kip.svg", led_color=ORANGE, nfc_address="address_59"),
+    Sample(id=51, name="gitaar",
+           midi_values=MIDILIST[3], svg="gitaar.svg", led_color=LBLUE, nfc_address="address_51"),
+    Sample(id=52, name="bas",
+           midi_values=MIDILIST[10], svg="bas.svg", led_color=PURPLE, nfc_address="address_52"),
+    Sample(id=53, name="brandweer",
+           midi_values=MIDILIST[1], svg="brandweer.svg", led_color=RED, nfc_address="address_53"),
+    Sample(id=54, name="sax",
+           midi_values=MIDILIST[7], svg="sax.svg", led_color=YELLOW, nfc_address="address_54"),
+    Sample(id=55, name="leeuw",
+           midi_values=MIDILIST[4], svg="leeuw.svg", led_color=LBROWN, nfc_address="address_55"),
+    Sample(id=58, name="robot",
+           midi_values=MIDILIST[6], svg="robot.svg", led_color=GREY, nfc_address="address_58"),
+    Sample(id=67, name="donder",
+           midi_values=MIDILIST[2], svg="donder.svg", led_color=BROWN, nfc_address="address_67"),
+    Sample(id=68, name="banaan",
+           midi_values=MIDILIST[0], svg="banaan.svg", led_color=YELLOW, nfc_address="address_68"),
+    Sample(id=69, name="mic",
+           midi_values=MIDILIST[0], svg="mic.svg", led_color=DBLUE, nfc_address="address_69"),
+    Sample(id=60, name="eend",
+           midi_values=MIDILIST[9], svg="eend.svg", led_color=DGREEN, nfc_address="address_60"),
+]
 
-message_list = []
+
+def sequencer_callback(message: str, value: Dict[str, Any]):
+    if message == "beat":
+        mqttManager.send_message(TOPICS["next_beat"], value)
+    elif message == "set_tile_color":
+        mqttManager.send_message(TOPICS["set_tile_color"], value)
+    elif message == "assign_sample_to_tile":
+        mqttManager.send_message(TOPICS["set_tile_color"], value)
+
 
 def on_message(data: Dict[str, str]):
     """Callback function for MQTTManager. Called when a message is received."""
-    print("Received message: ", data)
-    message_list.append(data)
-    # if data["id"] == "all":
-    #     for i in range(16):
-    #         sequencer.assign_sample_to_tile(i, data["sample_id"])
-    # else:
-    #     sequencer.assign_sample_to_tile(int(data["id"]), data["sample_id"])
-
-class CustomWatcher(Watcher):
-    def is_glob_changed(self, path):
-        return True
+    if data["topic"] == "tile_nfc":
+        sequencer.assign_sample_to_tile(
+            int(data["id"]), int(data["sample_id"]))
 
 
 @app.route('/')
@@ -47,30 +73,37 @@ def index():
 
 @app.route('/send-message')
 def send_message():
-    #send topic time and message
-    current_time = time.time()
-    formatted_time = time.strftime('%H:%M:%S', time.localtime(current_time))
-    
-    # mqqManager.send_message("sample/set", '{"time": 0, "topic": "sample/set", "body": "test"}')
-    mqqManager.send_message("sample/set", '{"time": "' + formatted_time + '", "topic": "sample/set", "body": "test"}')
-    return "Message sent"
+    mqttManager.send_message(
+        TOPICS["set_tile_color"], {"tile_id": "0", "color": "255255255"})
+    mqttManager.send_message(
+        TOPICS["tile_nfc"], {"id": "0", "sample_id": "0"})
+    return {"Msg": "Message sent"}
+
+@app.route('/stream-data')
+def stream_data():
+    def generate():
+        while True:
+            print("sending data")
+            yield f"data: {sequencer.current_beat}\n\n"
+            time.sleep(0.2)
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
 
 @app.route('/get_update')
 def get_update():
     # Generate or fetch the update data
-    data = {"current_beat": sequencer.current_beat,"message_list": message_list[-10:]}
+    data = {"current_beat": sequencer.current_beat,
+            "message_list": mqttManager.message_list[-10:]}
 
     return jsonify(data)
 
 
-
 if __name__ == '__main__':
+    # Create a Sequencer object with 16 tiles and 120 bpm
+    sequencer = Sequencer(16, 120, sequencer_callback, sampleList)
+
     sequencer.update()
 
-    mqqManager.connect("localhost")  # Connect to the MQTT broker
-    mqqManager.set_callback(on_message)  # Set the callback function
+    mqttManager.connect("localhost")  # Connect to the MQTT broker
+    mqttManager.set_callback(on_message)  # Set the callback function
 
-    server = Server(app.wsgi_app)
-    server.watcher = CustomWatcher()  # Use the custom watcher
-    # Specify the liveport for browser synchronization
-    server.serve(port=5000, liveport=35729)
+    app.run(debug=True)
