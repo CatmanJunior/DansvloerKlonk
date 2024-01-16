@@ -36,7 +36,7 @@ class Sequencer:
 
     def next_beat(self) -> None:
         self.timeLastBeat = time.time()
-        print("next beat")
+        # print("next beat")
         self.current_beat = (self.current_beat + 1) % len(self.tiles)
         self.play_current_beat()
         self.callback("beat", {"current_beat" : self.current_beat, "bpm" : self.bpm})

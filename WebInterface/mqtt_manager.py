@@ -27,7 +27,7 @@ class MQTTManager:
         
         if not "topic" in data.keys():
             data["topic"] = msg.topic
-        print(f"Received message on [{msg.topic}]: {data}")
+        # print(f"Received message on [{msg.topic}]: {data}")
         if self.callback:
 
             self.callback(data)

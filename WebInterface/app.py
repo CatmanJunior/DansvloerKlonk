@@ -5,11 +5,10 @@ python app.py
 it will run on localhost:5000
 """
 
+import json
 import time
 from typing import Any, Dict
 from flask import Flask, Response, jsonify, render_template, request, stream_with_context
-from livereload import Server
-from livereload.watcher import Watcher
 from constants import TOPICS, MIDILIST, BLACK, BROWN, ORANGE, LBLUE, PURPLE, RED, YELLOW, LBROWN, GREY, DBLUE, DGREEN
 from sequencer import Sequencer
 from sample import Sample
@@ -79,13 +78,19 @@ def send_message():
         TOPICS["tile_nfc"], {"id": "0", "sample_id": "0"})
     return {"Msg": "Message sent"}
 
+#Stream data to the client
+#Send everytime the beat changes
 @app.route('/stream-data')
 def stream_data():
     def generate():
+        last_sent_beat = None
         while True:
-            print("sending data")
-            yield f"data: {sequencer.current_beat}\n\n"
-            time.sleep(0.2)
+            if sequencer.current_beat != last_sent_beat:
+                data = {"current_beat": sequencer.current_beat, "message_list": mqttManager.message_list[-10:]}
+                json_data = json.dumps(data)
+                yield f"data:{json_data}\n\n"
+                last_sent_beat = sequencer.current_beat
+            time.sleep(0.05)  # sleep for a short time to prevent busy-waiting
     return Response(stream_with_context(generate()), mimetype='text/event-stream')
 
 @app.route('/get_update')

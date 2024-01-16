@@ -56,26 +56,26 @@ function outsideClick(e) {
 //     }, false);
 // }
 
-function fetchUpdate() {
-    fetch('/get_update')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            // Process the data received from Flask
-            // data contains current beat, light up the corresponding tile
-            const tiles = document.querySelectorAll('.tile');
+// function fetchUpdate() {
+//     fetch('/get_update')
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log(data);
+//             // Process the data received from Flask
+//             // data contains current beat, light up the corresponding tile
+//             const tiles = document.querySelectorAll('.tile');
 
-            tiles.forEach(tile => {
-                if (tile.id == data['current_beat']) {
-                    tile.style.backgroundColor = '#444';
-                } else {
-                    tile.style.backgroundColor = '#ddd';
-                }
-            })
-            updateModal(data['message_list']);
+//             tiles.forEach(tile => {
+//                 if (tile.id == data['current_beat']) {
+//                     tile.style.backgroundColor = '#444';
+//                 } else {
+//                     tile.style.backgroundColor = '#ddd';
+//                 }
+//             })
+//             updateModal(data['message_list']);
 
-        }).catch(error => console.error('Error:', error));
-}
+//         }).catch(error => console.error('Error:', error));
+// }
 
 // Poll the server every 5 seconds
 // setInterval(fetchUpdate, 300);
@@ -87,8 +87,22 @@ const source = new EventSource("http://127.0.0.1:5000/stream-data");
 //streams the data
 
 source.onmessage = function (event) {
-    console.log(event.data);
+
+    const tiles = document.querySelectorAll('.tile');
+    // Process the data received from Flask
+    // data contains current beat, light up the corresponding tile
+    const data = JSON.parse(event.data);
+    console.log(data);
+    tiles.forEach(tile => {
+        if (tile.id == data['current_beat']) {
+            tile.style.backgroundColor = '#444';
+        } else {
+            tile.style.backgroundColor = '#ddd';
+        }
+    })
+    updateModal(data['message_list']);
 };
+
 source.onerror = function (error) {
     console.error("EventSource failed:", error);
     source.close(); // Consider closing the connection in case of an error
@@ -100,6 +114,7 @@ function updateModal(data) {
     messages.innerHTML = "";
 
     data.forEach(message => {
+        message = JSON.parse(message);
         const messageDiv = document.createElement('div');
         messageDiv.className = "message";
 
