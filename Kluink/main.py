@@ -1,3 +1,4 @@
+
 import paho.mqtt.client as mqtt
 import pygame
 import random
@@ -5,96 +6,57 @@ from functools import partial
 from constants import *
 from midi import *
 import config
+from classes import Tile, Object, ObjectList, ObjectDict
 
 midi_init()
 
-configer = config.Config
+configer = config.Config()
 configer.load_config(unique_sections="MQTT TILES UI".split())
 # configer.read("config.ini")
-# print(dir(configer))
+print(dir(configer))
 
-class Tile():
-    def __init__(self, id, row=0, column=0):
-        self.id = id
-        self.beat = self.id % BEATS
-        self.row = row
-        self.column = column
-        self.color = BLACK
-        self.object = ObjectList[0]
-        left = WIDTH / 2 - GRID_SIZE[0] / 2 + (TILE_SIZE + GUTTER_SIZE) * row
-        top = HEIGHT / 2 - GRID_SIZE[1] / 2 + \
-            (TILE_SIZE + GUTTER_SIZE) * column
-        self.rect = pygame.Rect(left, top, TILE_SIZE, TILE_SIZE)
+def sendMidi(object):
+    if object is None or not object.enabled:
+        return
+    if BOSS_SAMPLER:
+        chosen_midi = random.choice(BOSS_PROGRAMS)
+    else:
+        chosen_midi = random.choice(object.midi)
+    # send midi note on
+    MidiOn(chosen_midi)
 
-    def SendColor(self, rgb):
-        # print("sending : " + str(self.id))
-        client.publish("led" + str(self.id), str(rgb) + "1")
+# Pygame functions
+def draw_tile(tile):
+    rect = pygame.Rect(
+        tile.row * (TILE_SIZE + GUTTER_SIZE),
+        tile.column * (TILE_SIZE + GUTTER_SIZE),
+        TILE_SIZE,
+        TILE_SIZE
+    )
+    if tile.color == BLACK:
+        pygame.draw.rect(window, color_to_tuple(WHITE), rect, 2)
+    else:
+        pygame.draw.rect(window, color_to_tuple(
+            tile.color), rect, TILE_BORDER_SIZE)
 
-    def SetColor(self, rgb):
-        self.color = rgb
-        self.SendColor(rgb)
 
-    def SetObject(self, obj):
-        self.object = obj
-        self.SetColor(obj.color)
+def draw_active_tile(tile):
+    rect = pygame.Rect(
+        tile.row * (TILE_SIZE + GUTTER_SIZE),
+        tile.column * (TILE_SIZE + GUTTER_SIZE),
+        TILE_SIZE,
+        TILE_SIZE
+    )
+    pygame.draw.rect(window, color_to_tuple(WHITE),
+                     rect, ACTIVE_TILE_BORDER_SIZE)
 
-    def RemoveObject(self):
-        self.object = ObjectList[0]
-        self.SetColor(BLACK)
-
-    def draw(self):
-        if self.color == BLACK:
-            pygame.draw.rect(window,
-                             color_to_tuple(WHITE),
-                             self.rect,
-                             2)
-        else:
-            pygame.draw.rect(window,
-                             color_to_tuple(self.color),
-                             self.rect,
-                             TILE_BORDER_SIZE)
-
-    def draw_active(self):
-        pygame.draw.rect(window, color_to_tuple(WHITE),
-                         self.rect, ACTIVE_TILE_BORDER_SIZE)
-
-class Object():
-    def __init__(self, name="---", id=0, color=BLACK,
-                 midi=[0], enabled=True):
-        self.name = name
-        self.id = id
-        self.color = color
-        self.midi = midi
-        self.enabled = enabled
-
-    def sendMidi(self):
-        if BOSS_SAMPLER:
-            midi_program(random.choice(BOSS_PROGRAMS))
-            MidiOn(self.midi[0])
-        else:
-            MidiOn(random.choice(self.midi))
-
-ObjectList = [
-    Object("---", 0, BLACK, MIDILIST[0]),
-    Object("poep", 56, BROWN, MIDILIST[8]),
-    Object("kip", 59, ORANGE, MIDILIST[5]),
-    Object("gitaar", 51, LBLUE, MIDILIST[3]),
-    Object("bas", 52, PURPLE, MIDILIST[10]),
-    Object("brandweer", 53, RED, MIDILIST[1]),
-    Object("sax", 54, YELLOW, MIDILIST[7]),
-    Object("leeuw", 55, LBROWN, MIDILIST[4]),
-    Object("robot", 58, GREY, MIDILIST[6]),
-    Object("donder", 67, BROWN, MIDILIST[2], enabled=False),
-    Object("banaan", 68, YELLOW, MIDILIST[0]),
-    Object("mic", 69, DBLUE, MIDILIST[0]),
-    Object("eend", 60, DGREEN, MIDILIST[9]), ]
 
 # MQTT-------
 # The callback for when the client receives a
 # CONNACK response from the server.
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, prop):
     print("Connected with result code " + str(rc))
     for tile in range(TOTAL_TILES):
         # Subscribe to the tile topics (t0-t15)
@@ -107,27 +69,38 @@ def on_message(client, userdata, msg):
     payload = str(msg.payload)[3:-1]
     # Subtopic -> messages are build as a15. a = NFC. s = Sensor.
     subTop = str(msg.payload)[2]
+    # if subtopic is s return
+    if subTop == "s":
+        return
     if DEBUG:
         print("New Message -> Topic: " + msg.topic +
               " | Subtopic: " + subTop + " | Payload: " + payload)
-# Put this in a function plz
-    for tile in tile_list:
-        if msg.topic == "t" + str(tile.id) and subTop == "a":
-                for obj in ObjectList:
-                    if payload == str(obj.id) and obj.id != 0:
-                        obj.sendMidi()
-                        tile_list[tile.id].SetObject(obj)
-                        break
+    # seperate the tile number from the topic if topic is "t" + num
+    if msg.topic[0] == "t":
+        tileNum = int(msg.topic[1:])
+    if tileNum in tileDict:
+        tile = tileDict[tileNum]
+        if subTop == "a":
+            payload = int(payload)
+            if payload in ObjectDict and payload != 0:
+                obj = ObjectDict[payload]
+                sendMidi(obj)
+                tile_list[tile.id].SetObject(obj)
+                print("Tile " + str(tile.id) + " set to " + obj.name)
+
+
+def SendColor(tile):
+    client.publish("led" + str(tile.id), tile.color + "1")
+
+
 # print(configer.sections())
-client = mqtt.Client(configer.clientname)
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)  # type: ignore
 # client = mqtt.Client(configer['MQTT']['clientName'])
 client.on_connect = on_connect
 client.on_message = on_message
 if CONNECT_TO_BROKER:
     # try:
-    client.connect(host="192.168.178.40",
-                   port=1883,
-                   keepalive=180)
+    client.connect(host="192.168.178.40")
     print("Connected to Broker")
     client.loop_start()
     # except:
@@ -146,10 +119,17 @@ currentBeat = 0
 lastTick = 0
 
 
-
 for col in range(GRID[1]):
     for row in range(GRID[0]):
-        tile_list.append(Tile(id=col * GRID[0] + row, row=row, column=col))
+        beat = (row + col * GRID[0]) % BEATS
+        new_tile = Tile(len(tile_list), row, col, beat)
+        new_tile.set_object(ObjectList[0])
+        tile_list.append(new_tile)
+
+tileDict = {tile.id: tile for tile in tile_list}
+
+print("Tiles created: " + str(len(tile_list)))
+print("Beat each tile is on: " + str([tile.beat for tile in tile_list]))
 
 
 def empty_all_tiles():
@@ -158,7 +138,7 @@ def empty_all_tiles():
 
 
 def PopulateTile():
-    random.choice(tile_list).SetObject(random.choice(ObjectList))
+    random.choice(tile_list).set_object(random.choice(ObjectList))
 
 
 def EmptyTile():
@@ -191,6 +171,11 @@ key_dict = {
     pygame.K_ESCAPE: kill_game,
 }
 
+# a string containing the name of the keys + function names + /n
+key_list = "\n".join([pygame.key.name(key) + " : " +
+                     func.__name__ for key, func in key_dict.items()])
+print("Keybindings: \n" + key_list)
+
 
 def default_key_unmapped(case):
     if DEBUG:
@@ -202,7 +187,7 @@ def key_switcher(case):
 
 
 def color_to_tuple(color_const):
-    return((int(color_const[:3]), int(color_const[3:6]), int(color_const[6:9])))
+    return ((int(color_const[:3]), int(color_const[3:6]), int(color_const[6:9])))
 
 
 while gameLoop:
@@ -234,16 +219,16 @@ while gameLoop:
         lastTick += MILIS_PER_BEAT
 
         for tile in tile_list:
-            tile.draw()
-
+            draw_tile(tile)
             if tile.beat == currentBeat:
-                tile.object.sendMidi()
-                tile.SendColor(WHITE)
+                sendMidi(tile.object)
+                SendColor(tile)
                 if DEBUG:
-                    print(str(currentBeat) + ": " + tile.object.name)
-                tile.draw_active()
+                    print(str(currentBeat) + ": " + tile.object.name +
+                          " on tile " + str(tile.id) + " at beat " + str(tile.beat))
+                draw_active_tile(tile)
             else:
-                tile.SendColor(tile.color)
+                SendColor(tile)
 
         currentBeat += 1
 
@@ -252,6 +237,5 @@ while gameLoop:
     clock.tick(180)
 
 client.loop_stop()
-
 
 pygame.quit()

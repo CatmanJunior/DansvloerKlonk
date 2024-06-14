@@ -124,7 +124,7 @@ ObjectList[12] = Object("eend", 	12, 	DGREEN,	MIDILIST[12])
 #MQTT-------
 
 # The callback for when the client receives a CONNACK response from the server.
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, prop):
 	print("Connected with result code "+str(rc))
 	for i in range(TOTALTILES):
 		client.subscribe("t" + str(i)) #Subscribe to the tile topics (t0-t15)
@@ -160,7 +160,7 @@ def on_message(client, userdata, msg):
 				if PIANOMODE:
 					MidiOn(PIANOMIDILIST[i.id])
 
-client = mqtt.Client("RASPBERRY")
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.on_connect = on_connect
 client.on_message = on_message
 client.connect(BROKERIP, port=1883, keepalive=180)

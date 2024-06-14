@@ -6,7 +6,9 @@ config = configparser.ConfigParser()
 class Config():
     @classmethod
     def load_config(cls, unique_sections=[]):
-        config.read('config.ini')
+        print(config.read('Kluink\\config.ini'))
+        print(config.sections())
+        print(config)
         for section in config:
             for option in config[section]:
                 if section in unique_sections:
@@ -14,6 +16,7 @@ class Config():
                 else:
                     var_name = section + "_" + option
                 setattr(cls, var_name, config[section][option])
+                print(var_name, config[section][option])
         print(dir(Config))
 
     @classmethod

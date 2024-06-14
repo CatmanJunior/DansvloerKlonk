@@ -9,9 +9,9 @@ DEBUG = True
 BOSS_PROGRAMS = [4, 5]
 
 # Sequencer Constants
-BPM = 180  # Beats per Minute
-BEATS = 12  # The amount of beats to loop
-GRID = (4, 3)  # The layout of the tile_list
+BPM = 60  # Beats per Minute
+BEATS = 8  # The amount of beats to loop
+GRID = (4, 2)  # The layout of the tile_list
 
 # MQTT Constants
 BROKER_IP = "192.168.178.40"
@@ -74,3 +74,5 @@ if BOSS_SAMPLER:
 else:
     MIDILIST = [[0], [61, 73], [62, 74], [63, 75], [64, 76], [65, 77], [
         66, 78], [67, 79], [68, 80], [69, 81], [70, 82], [71, 83], [72, 84]]
+    
+MAPPING = [4,  1, 8, 9, 10, 11, 0, 3, 5, 6]
