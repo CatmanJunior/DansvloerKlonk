@@ -1,6 +1,6 @@
-CONNECT_TO_BROKER = True
+CONNECT_TO_BROKER = False
 
-MIDI_DEVICE = 0  # 0 for testing, 1 for operating
+MIDI_DEVICE = 1  # 0 for testing, 1 for operating
 BOSS_SAMPLER = False
 MIDI_DEBUG = True
 
@@ -75,4 +75,4 @@ else:
     MIDILIST = [[0], [61, 73], [62, 74], [63, 75], [64, 76], [65, 77], [
         66, 78], [67, 79], [68, 80], [69, 81], [70, 82], [71, 83], [72, 84]]
     
-MAPPING = [4,  1, 8, 9, 10, 11, 0, 3, 5, 6]
+TILE_ORDER_MAPPING = [1,4, 2, 3,0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]

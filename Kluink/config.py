@@ -6,9 +6,12 @@ config = configparser.ConfigParser()
 class Config():
     @classmethod
     def load_config(cls, unique_sections=[]):
-        print(config.read('Kluink\\config.ini'))
-        print(config.sections())
-        print(config)
+        try:
+            config.read('Kluink\\config.ini')
+        except Exception as e:
+            print("ERROR: Can't read config.ini - " + str(e))
+            return
+        
         for section in config:
             for option in config[section]:
                 if section in unique_sections:

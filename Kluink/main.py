@@ -1,12 +1,11 @@
-
-import paho.mqtt.client as mqtt
 import pygame
 import random
 from functools import partial
 from constants import *
 from midi import *
-import config
 from classes import Tile, Object, ObjectList, ObjectDict
+import config
+import mqtt
 
 midi_init()
 
@@ -38,6 +37,24 @@ def draw_tile(tile):
     else:
         pygame.draw.rect(window, color_to_tuple(
             tile.color), rect, TILE_BORDER_SIZE)
+    
+    font = pygame.font.SysFont(None, 24)  # type: ignore # Adjust the font size as needed
+
+    tile_surface = font.render("tile: " + str(tile.id), True, color_to_tuple(WHITE))  # Render the tile ID as text
+    center_x = rect.x + (rect.width - tile_surface.get_width()) // 2
+    center_y = rect.y + (rect.height - tile_surface.get_height()) // 2
+
+    beat_surface = font.render("beat: " + str(tile.beat), True, color_to_tuple(WHITE))  # Render the beat number as text
+    beat_x = rect.x + (rect.width - beat_surface.get_width()) // 2
+    beat_y = rect.y + (rect.height - beat_surface.get_height()) // 2 + 30
+
+    object_surface = font.render("object: " + tile.object.name, True, color_to_tuple(WHITE))  # Render the object name as text
+    object_x = rect.x + (rect.width - object_surface.get_width()) // 2
+    object_y = rect.y + (rect.height - object_surface.get_height()) // 2 + 60
+
+    window.blit(tile_surface, (center_x, center_y))
+    window.blit(beat_surface, (beat_x, beat_y))
+    window.blit(object_surface, (object_x, object_y))
 
 
 def draw_active_tile(tile):
@@ -50,61 +67,21 @@ def draw_active_tile(tile):
     pygame.draw.rect(window, color_to_tuple(WHITE),
                      rect, ACTIVE_TILE_BORDER_SIZE)
 
-
-# MQTT-------
-# The callback for when the client receives a
-# CONNACK response from the server.
-
-
-def on_connect(client, userdata, flags, rc, prop):
-    print("Connected with result code " + str(rc))
-    for tile in range(TOTAL_TILES):
-        # Subscribe to the tile topics (t0-t15)
-        client.subscribe("t" + str(tile))
-
-# The callback for when a PUBLISH message is received from the server.
-
-
-def on_message(client, userdata, msg):
-    payload = str(msg.payload)[3:-1]
-    # Subtopic -> messages are build as a15. a = NFC. s = Sensor.
-    subTop = str(msg.payload)[2]
-    # if subtopic is s return
-    if subTop == "s":
-        return
-    if DEBUG:
-        print("New Message -> Topic: " + msg.topic +
-              " | Subtopic: " + subTop + " | Payload: " + payload)
+def on_tile_message(topic, subTopic, payload):
     # seperate the tile number from the topic if topic is "t" + num
-    if msg.topic[0] == "t":
-        tileNum = int(msg.topic[1:])
+    if topic[0] == "t":
+        tileNum = int(topic[1:])
     if tileNum in tileDict:
         tile = tileDict[tileNum]
-        if subTop == "a":
+        if subTopic == "a":
             payload = int(payload)
             if payload in ObjectDict and payload != 0:
                 obj = ObjectDict[payload]
                 sendMidi(obj)
-                tile_list[tile.id].SetObject(obj)
+                tile_list[tile.id].set_object(obj)
                 print("Tile " + str(tile.id) + " set to " + obj.name)
 
-
-def SendColor(tile):
-    client.publish("led" + str(tile.id), tile.color + "1")
-
-
-# print(configer.sections())
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)  # type: ignore
-# client = mqtt.Client(configer['MQTT']['clientName'])
-client.on_connect = on_connect
-client.on_message = on_message
-if CONNECT_TO_BROKER:
-    # try:
-    client.connect(host="192.168.178.40")
-    print("Connected to Broker")
-    client.loop_start()
-    # except:
-    #     print("ERROR: Can't connect to MQTT BROKER")
+mqtt.connectToMqtt(msg_Callback=on_tile_message)
 
 tile_list = []
 # PyGame Setup
@@ -119,12 +96,16 @@ currentBeat = 0
 lastTick = 0
 
 
-for col in range(GRID[1]):
-    for row in range(GRID[0]):
-        beat = (row + col * GRID[0]) % BEATS
-        new_tile = Tile(len(tile_list), row, col, beat)
-        new_tile.set_object(ObjectList[0])
-        tile_list.append(new_tile)
+for tile_id in range(1, TOTAL_TILES + 1):
+    beat = TILE_ORDER_MAPPING[tile_id-1]
+    row = beat % GRID[0]
+    col = beat // GRID[0]
+    new_tile = Tile(tile_id, row, col, beat)
+    new_tile.set_object(ObjectList[0])
+    tile_list.append(new_tile)
+
+#order the tiles by beat
+# tile_list.sort(key=lambda x: x.beat)
 
 tileDict = {tile.id: tile for tile in tile_list}
 
@@ -222,13 +203,13 @@ while gameLoop:
             draw_tile(tile)
             if tile.beat == currentBeat:
                 sendMidi(tile.object)
-                SendColor(tile)
+                mqtt.SendTileColor(tile, WHITE)
                 if DEBUG:
                     print(str(currentBeat) + ": " + tile.object.name +
                           " on tile " + str(tile.id) + " at beat " + str(tile.beat))
                 draw_active_tile(tile)
             else:
-                SendColor(tile)
+                mqtt.SendTileColor(tile)
 
         currentBeat += 1
 
@@ -236,6 +217,5 @@ while gameLoop:
 
     clock.tick(180)
 
-client.loop_stop()
-
+mqtt.Stop()
 pygame.quit()

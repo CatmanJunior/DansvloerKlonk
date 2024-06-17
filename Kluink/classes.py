@@ -1,5 +1,6 @@
 # classes.py
 import random
+from typing import Mapping
 from constants import *
 
 class Tile:
