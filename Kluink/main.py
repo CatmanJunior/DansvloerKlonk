@@ -6,6 +6,7 @@ from midi import *
 from classes import Tile, Object, ObjectList, ObjectDict
 import config
 import mqtt
+from uiDrawer import draw_tile, draw_active_tile
 
 midi_init()
 
@@ -13,59 +14,6 @@ configer = config.Config()
 configer.load_config(unique_sections="MQTT TILES UI".split())
 # configer.read("config.ini")
 print(dir(configer))
-
-def sendMidi(object):
-    if object is None or not object.enabled:
-        return
-    if BOSS_SAMPLER:
-        chosen_midi = random.choice(BOSS_PROGRAMS)
-    else:
-        chosen_midi = random.choice(object.midi)
-    # send midi note on
-    MidiOn(chosen_midi)
-
-# Pygame functions
-def draw_tile(tile):
-    rect = pygame.Rect(
-        tile.row * (TILE_SIZE + GUTTER_SIZE),
-        tile.column * (TILE_SIZE + GUTTER_SIZE),
-        TILE_SIZE,
-        TILE_SIZE
-    )
-    if tile.color == BLACK:
-        pygame.draw.rect(window, color_to_tuple(WHITE), rect, 2)
-    else:
-        pygame.draw.rect(window, color_to_tuple(
-            tile.color), rect, TILE_BORDER_SIZE)
-    
-    font = pygame.font.SysFont(None, 24)  # type: ignore # Adjust the font size as needed
-
-    tile_surface = font.render("tile: " + str(tile.id), True, color_to_tuple(WHITE))  # Render the tile ID as text
-    center_x = rect.x + (rect.width - tile_surface.get_width()) // 2
-    center_y = rect.y + (rect.height - tile_surface.get_height()) // 2
-
-    beat_surface = font.render("beat: " + str(tile.beat), True, color_to_tuple(WHITE))  # Render the beat number as text
-    beat_x = rect.x + (rect.width - beat_surface.get_width()) // 2
-    beat_y = rect.y + (rect.height - beat_surface.get_height()) // 2 + 30
-
-    object_surface = font.render("object: " + tile.object.name, True, color_to_tuple(WHITE))  # Render the object name as text
-    object_x = rect.x + (rect.width - object_surface.get_width()) // 2
-    object_y = rect.y + (rect.height - object_surface.get_height()) // 2 + 60
-
-    window.blit(tile_surface, (center_x, center_y))
-    window.blit(beat_surface, (beat_x, beat_y))
-    window.blit(object_surface, (object_x, object_y))
-
-
-def draw_active_tile(tile):
-    rect = pygame.Rect(
-        tile.row * (TILE_SIZE + GUTTER_SIZE),
-        tile.column * (TILE_SIZE + GUTTER_SIZE),
-        TILE_SIZE,
-        TILE_SIZE
-    )
-    pygame.draw.rect(window, color_to_tuple(WHITE),
-                     rect, ACTIVE_TILE_BORDER_SIZE)
 
 def on_tile_message(topic, subTopic, payload):
     # seperate the tile number from the topic if topic is "t" + num
@@ -83,7 +31,7 @@ def on_tile_message(topic, subTopic, payload):
 
 mqtt.connectToMqtt(msg_Callback=on_tile_message)
 
-tile_list = []
+
 # PyGame Setup
 pygame.init()
 window = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -95,17 +43,18 @@ gameLoop = True
 currentBeat = 0
 lastTick = 0
 
+def createTileList():
+    tile_list = []
+    for tile_id in range(1, TOTAL_TILES + 1):
+        beat = TILE_ORDER_MAPPING[tile_id-1]
+        row = beat % GRID[0]
+        col = beat // GRID[0]
+        new_tile = Tile(tile_id, row, col, beat)
+        new_tile.set_object(ObjectList[0])
+        tile_list.append(new_tile)
+    return tile_list
 
-for tile_id in range(1, TOTAL_TILES + 1):
-    beat = TILE_ORDER_MAPPING[tile_id-1]
-    row = beat % GRID[0]
-    col = beat // GRID[0]
-    new_tile = Tile(tile_id, row, col, beat)
-    new_tile.set_object(ObjectList[0])
-    tile_list.append(new_tile)
-
-#order the tiles by beat
-# tile_list.sort(key=lambda x: x.beat)
+tile_list = createTileList()
 
 tileDict = {tile.id: tile for tile in tile_list}
 
@@ -117,20 +66,16 @@ def empty_all_tiles():
     for tile in tile_list:
         tile.RemoveObject()
 
-
-def PopulateTile():
+def PopulateRandomTile():
     random.choice(tile_list).set_object(random.choice(ObjectList))
 
-
-def EmptyTile():
+def EmptyRandomTile():
     random.choice(tile_list).RemoveObject()
-
 
 def SequencerMode():
     global SEQUENCERMODE
     SEQUENCERMODE = not SEQUENCERMODE
     print("SEQUENCERMODE: " + str(SEQUENCERMODE))
-
 
 def RandomSequencerMode():
     global RANDOMSEQUENCE
@@ -144,8 +89,8 @@ def kill_game():
 
 
 key_dict = {
-    pygame.K_SPACE: PopulateTile,
-    pygame.K_p: PopulateTile,
+    pygame.K_SPACE: PopulateRandomTile,
+    pygame.K_p: PopulateRandomTile,
     pygame.K_r: empty_all_tiles,
     pygame.K_2: SequencerMode,
     pygame.K_3: RandomSequencerMode,
@@ -200,14 +145,14 @@ while gameLoop:
         lastTick += MILIS_PER_BEAT
 
         for tile in tile_list:
-            draw_tile(tile)
+            draw_tile(tile, window)
             if tile.beat == currentBeat:
                 sendMidi(tile.object)
                 mqtt.SendTileColor(tile, WHITE)
                 if DEBUG:
                     print(str(currentBeat) + ": " + tile.object.name +
                           " on tile " + str(tile.id) + " at beat " + str(tile.beat))
-                draw_active_tile(tile)
+                draw_active_tile(tile,window)
             else:
                 mqtt.SendTileColor(tile)
 

@@ -1,8 +1,9 @@
+import random
 import rtmidi  # https://pypi.python.org/pypi/python-rtmidi
 import rtmidi.midiconstants
 from constants import *
 
-midiOut = rtmidi.MidiOut()
+midiOut = rtmidi.MidiOut() # type: ignore
 
 def MidiClock():
     midiOut.send_message([0xF8])
@@ -38,3 +39,13 @@ def midi_init():
 
     if MIDI_DEBUG:
         MidiOn(MIDILIST[1][0])
+        
+def sendMidi(object):
+    if object is None or not object.enabled:
+        return
+    if BOSS_SAMPLER:
+        chosen_midi = random.choice(BOSS_PROGRAMS)
+    else:
+        chosen_midi = random.choice(object.midi)
+    # send midi note on
+    MidiOn(chosen_midi)
